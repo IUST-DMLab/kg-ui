@@ -15,6 +15,8 @@ app
         $scope.login = function (username, password) {
             $scope.authToken = '';
             $scope.roles = [];
+            $scope.username = '';
+
 
             RestService.login(username, password).then(SUCCESS, ERROR);
 
@@ -23,10 +25,12 @@ app
                 if ($scope.authToken) {
                     $cookieStore.put('authToken', $scope.authToken);
                     $cookieStore.put('roles', response.data);
+                    $cookieStore.put('username', username);
                     $scope.roles = response.data;
                     $scope.authenticated = true;
                     $scope.isVipUser = (response.data.indexOf("ROLE_VIPEXPERT") !== -1);
                     $scope.error = undefined;
+                    $scope.username = username;
 
                     $location.path( "/users" );
                 }
@@ -38,5 +42,6 @@ app
                 $scope.error = {error: error, status: status};
             }
         };
+
 
     });

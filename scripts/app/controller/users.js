@@ -1,5 +1,5 @@
 app
-    .controller('UsersController', function ($scope, RestService, $cookieStore, $mdDialog) {
+    .controller('UsersController', function ($scope, RestService, $cookieStore, $mdDialog, $location) {
         $scope.selected = [];
         $scope.limitOptions = [5, 10, 15];
 
@@ -24,11 +24,12 @@ app
 
         $scope.load = function () {
             let authToken = $cookieStore.get('authToken');
+            $scope.username = $cookieStore.get('username');
 
             RestService.getUsers(authToken, $scope.query.name, $scope.query.username)
                 .then(function (response) {
                     $scope.data = {
-                        users: response.data.data,
+                        users: response.data.data.sort(compare),
                         pageIndex: response.data.page,
                         pageSize: response.data.pageSize,
                         pageCount: response.data.pageCount,
@@ -39,6 +40,14 @@ app
                     console.log('error : ', err);
                 });
         };
+
+        function compare(a, b) {
+            if (a.name < b.name)
+                return -1;
+            if (a.name > b.name)
+                return 1;
+            return 0;
+        }
 
         $scope.edit = function (user) {
             $mdDialog.show({
@@ -57,6 +66,18 @@ app
             });
         };
 
+        $scope.logout = function () {
+            $cookieStore.put('authToken', '');
+            $cookieStore.put('roles', '');
+            $cookieStore.put('username', '');
+            $scope.authToken = undefined;
+            $scope.authenticated = false;
+            $scope.roles = [];
+            $scope.isVipUser = undefined;
+            $scope.data = {};
+
+            $location.path( "/login" );
+        };
 
         function DialogController($scope, $mdDialog, user) {
             $scope.user = user ? angular.copy(user) : {permissions: []};
